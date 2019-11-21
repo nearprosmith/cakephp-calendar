@@ -1,5 +1,5 @@
 {
-    "name": "nearprosmitih/Calendar",
+    "name": "nearprosmitih/cakephp-calendar",
     "description": "Calendar plugin for CakePHP3",
     "type": "cakephp-plugin",
     "license": "MIT",
