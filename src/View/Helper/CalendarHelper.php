@@ -4,6 +4,7 @@ namespace Calendar\View\Helper;
 
 use Cake\Chronos\Chronos;
 use Cake\Chronos\ChronosInterface;
+use Cake\I18n\FrozenDate;
 use Cake\View\Helper;
 use Cake\View\View;
 
@@ -41,11 +42,10 @@ class CalendarHelper extends Helper
      */
     public function table($options = [])
     {
-        $time = Chronos::today();
-
-        $matrix = null;
-        for ($day = $time->copy()->startOfMonth()->startOfWeek(), $i = 0; $day->lte($time->copy()->lastOfMonth()) || !$day->isMonday(); $i++, $day = $day->addDay()) {
-            $matrix[intval($i/7)][$day->dayOfWeek] = $day->copy();
+        if(!isset($options['time'])){
+            $time = FrozenDate::today();
+        } else {
+            $time = $options['time'];
         }
 
         $options = $options + $this->_defaultConfig;
@@ -56,21 +56,26 @@ class CalendarHelper extends Helper
         }
         $html .= "</tr></thead>";
         $html .= "<tbody>";
-        for ($r = 0; $r < $time->endOfMonth()->weekOfMonth; $r++) {
-            $html .= "<tr>";
-            for ($c = 1; $c <= 7; $c++) {
-                if($matrix[$r][$c]->month != $time->month){
-                    if($options['displayOtherMonth']){
-                        $html .= "<td class='".$options['tdClass']." is-anothermonth ".$this->__generateDayOfWeekClass($matrix[$r][$c]->dayOfWeek)."'>".$options['innerHtml']($matrix[$r][$c])."</td>";
-                    } else {
-                        $html .= "<td class='".$options['tdClass']." is-anothermonth ".$this->__generateDayOfWeekClass($matrix[$r][$c]->dayOfWeek)."'> </td>";
-                    }
-                } else {
-                    $html .= "<td class='".$options['tdClass']." is-thismonth ".$this->__generateDayOfWeekClass($matrix[$r][$c]->dayOfWeek)."'>".$options['innerHtml']($matrix[$r][$c])."</td>";
-                }
+        for ($day = $time->copy()->startOfMonth()->startOfWeek(), $i = 0; $day->lte($time->copy()->lastOfMonth()) || !$day->isMonday(); $i++, $day = $day->addDay()) {
+            if($day->isMonday()){
+                $html .= "<tr>";
             }
-            $html .= "</tr>";
+
+            if($day->month !== $time->month){
+                if($options['displayOtherMonth']){
+                    $html .= "<td class='".$options['tdClass']." is-anothermonth ".$this->__generateDayOfWeekClass($day->dayOfWeek)."'>".$options['innerHtml']($day)."</td>";
+                } else {
+                    $html .= "<td class='".$options['tdClass']." is-anothermonth ".$this->__generateDayOfWeekClass($day->dayOfWeek)."'> </td>";
+                }
+            } else {
+                $html .= "<td class='".$options['tdClass']." is-thismonth ".$this->__generateDayOfWeekClass($day->dayOfWeek)."'>".$options['innerHtml']($day)."</td>";
+            }
+
+            if($day->isSunday()){
+                $html .= "</tr>";
+            }
         }
+
         $html .= "</tbody>";
         $html .= "</table>";
         return $html;
